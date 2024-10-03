@@ -140,14 +140,3 @@ data aws_iam_policy_document ecs_policy_doc {
     resources = ["*"]
   }
 }
-
-# TODO: remove full access
-# resource "aws_iam_role_policy_attachment" "ecs_attach_policy_3" {
-#   role       = aws_iam_role.ecs_task.id
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
-# }
-
-# resource "aws_iam_role_policy_attachment" "ecs_attach_policy_4" {
-#   role       = aws_iam_role.ecs_task.id
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-# }

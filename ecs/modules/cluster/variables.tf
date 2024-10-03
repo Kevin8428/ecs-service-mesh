@@ -35,19 +35,11 @@ variable "subnet" {
   description = "VPC subnet id for ASG"
 }
 
-# OPTIONAL
-
 variable "availability_zones" {
   type        = list(string)
   description = "AZs for EC2 instances"
   default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
-
-# variable "associate_public_ip_address" {
-#   type        = bool
-#   description = "Attach a public ip to the instance from within the VPC"
-#   default     = "false"
-# }
 
 variable "autoscaling_min_size" {
   type        = number

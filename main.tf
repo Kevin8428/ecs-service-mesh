@@ -89,7 +89,7 @@ module "cluster" {
   vpc                          = local.vpc
   ec2_launch_template_name     = "customer-cluster"
   ec2_instance_type            = "t3.small"
-  ec2_instance_key_name        = "dev-20240929" # TODO: inject via Make
+  ec2_instance_key_name        = "dev-20240929"
   autoscale_security_group_ids = [module.security_group_1.security_group.id]
   subnet                       = module.private_subnet_1.subnet_id # run app in private subnet only
 }
@@ -164,10 +164,6 @@ module "task_2" { # worker
     {
       name  = "AWS_REGION"
       value = "us-west-2"
-    },
-    {
-      name  = "DUMMY"
-      value = "2"
     }
   ]
   tags = local.tags
@@ -190,6 +186,7 @@ module "service_2" {
   ecs_task_count          = 1
 }
 
+# rds is expensive - deploy when ready for UAT
 # module "rds" {
 #   source            = "./rds/modules/v1"
 #   allocated_storage = 2
@@ -204,23 +201,13 @@ module "service_2" {
 #   skip_final_snapshot  = true
 # }
 
-
-# resource "aws_vpc" "main" {
-#   cidr_block           = "10.0.0.0/16"
-#   enable_dns_support   = true
-#   enable_dns_hostnames = true
-#   tags = {
-#     Env      = "dev"
-#     SystemId = "ecs-poc"
-#   }
-# }
-
-# TODO: stop using versioning here
+# deploy when ready for UAT
 # resource "aws_secretsmanager_secret" "rds_v11" {
 #   name = "rds_v11"
 #   tags = local.tags
 # }
 
+# deploy when ready for UAT
 # resource "aws_secretsmanager_secret_version" "rds_password" {
 #   secret_id     = aws_secretsmanager_secret.rds_v11.id
 #   secret_string = jsonencode({

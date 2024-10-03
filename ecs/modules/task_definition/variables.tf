@@ -41,21 +41,6 @@ variable "availability_zones" {
   description = "AZs required for placement"
 }
 
-# variable "secret_arn" {
-#   type        = string
-#   description = "rds secret arn"
-# }
-
-# variable "host_dns" {
-#   type        = string
-#   description = "rds dns"
-# }
-
-# variable "database_name" {
-#   type        = string
-#   description = "rds db name"
-# }
-
 variable "log_group_name" {
   type        = string
   description = "log group"

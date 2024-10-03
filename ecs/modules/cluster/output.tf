@@ -14,14 +14,6 @@ output "log_group_name" {
   value = aws_cloudwatch_log_group.logs.name
 }
 
-# output "service_discovery_arn" {
-#   value = aws_service_discovery_http_namespace.dev.arn
-# }
-
-# output "service_discovery_name" {
-#   value = aws_service_discovery_http_namespace.dev.name
-# }
-
 output "service_discovery_dns_arn" {
   value = aws_service_discovery_private_dns_namespace.dev_dns.arn
 }

@@ -66,27 +66,6 @@ resource "aws_security_group" "sg" {
   name        = var.ecs_service_name
   description = "Allow web traffic from anywhere for now" # TODO: restrict this
   vpc_id      = var.vpc_id
-  # ingress {
-  #   description = "HTTP"
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-  # ingress {
-  #   description = "HTTPS"
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-  # ingress {
-  #   description = "HTTP-8080"
-  #   from_port   = 8080
-  #   to_port     = 8080
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
 
   ingress {
     description = "Allow all inbound traffic"
@@ -124,24 +103,3 @@ resource "aws_security_group" "security_group_ie" {
   }
 
 }
-
-# # TODO: move this out of this module
-# resource "aws_vpc_endpoint" "sqs_vpc_ep_interface" {
-#   count               = var.endpoint == true ? 1 : 0
-#   vpc_id              = var.vpc_id
-#   vpc_endpoint_type   = "Interface"
-#   service_name        = "com.amazonaws.us-west-2.sqs"
-#   subnet_ids          = var.subnet_ids
-#   private_dns_enabled = true
-#   security_group_ids  = [aws_security_group.security_group_ie.id]
-# }
-
-# resource "aws_vpc_endpoint" "service_discovery_vpc_ep_interface" {
-#   count               = var.endpoint == true ? 1 : 0
-#   vpc_id              = var.vpc_id
-#   vpc_endpoint_type   = "Interface"
-#   service_name        = "com.amazonaws.us-west-2.servicediscovery"
-#   subnet_ids          = var.subnet_ids
-#   private_dns_enabled = true
-#   security_group_ids  = [aws_security_group.security_group_ie.id]
-# }
