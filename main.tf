@@ -1,51 +1,234 @@
-# SECRET DATA
+provider "aws" { region = "us-west-2" }
+data "aws_caller_identity" "current" {}
 
-data "aws_kms_alias" "rds" {
-  name = "alias/rds"
+locals {
+  system_id         = "ecs-poc"
+  region            = "us-west-2"
+  server_tag        = "0.2.2"
+  worker_tag        = "0.1.22"
+  availability_zone = "us-west-2a"
+  # TODO: change `poc` to `api`
+  server_ecr_image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/poc:${local.server_tag}"
+  worker_ecr_image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/poc-worker:${local.worker_tag}"
+  # TODO: add tags everywhere
+  tags = {
+    Env      = "dev"
+    SystemId = local.system_id
+    Name     = local.system_id
+  }
 }
 
-data "aws_secretsmanager_secret" "rds" {
-  name = "rds"
+resource "aws_vpc" "main" {
+  cidr_block                       = "10.0.0.0/16"
+  enable_dns_support               = true
+  enable_dns_hostnames             = true
+  assign_generated_ipv6_cidr_block = true
+  tags                             = local.tags
 }
 
-# PROVIDERS
 
-provider "aws" {
-  region = "us-west-2"
+locals {
+  vpc = { for k, v in aws_vpc.main : k => v if !contains(["tags_all", "tags"], k) }
 }
 
-# RESOURCES
-
-module "subnet_1a" {
-  source = "./vpc/modules/subnets/private"
-  cidr_block = "172.31.0.0/17" # need to inject vpc
-  availability_zone = "us-east-1a"
+# TODO: version tf modules
+module "ecr" {
+  source = "./ecr"
+  name   = "poc"
+  tags   = local.tags
 }
 
-module "subnet_1b" {
-  source = "./vpc/modules/subnets/private"
-  cidr_block = "172.31.128.0/18" # need to inject vpc
-  availability_zone = "us-east-1b"
+module "sns" {
+  source = "./sns/modules"
+  name   = "eventbus"
 }
 
-module "subnet_1c" {
-  source = "./vpc/modules/subnets/private"
-  cidr_block = "172.31.192.0/18" # need to inject vpc
-  availability_zone = "us-east-1c"
+module "sqs" {
+  source  = "./sqs/modules"
+  name    = "ecs-consumer-2"
+  sns_arn = module.sns.arn
+}
+
+module "gateways" {
+  source = "./vpc/modules/internet_gateway"
+  vpc    = local.vpc
+  tags   = local.tags
+}
+
+module "private_subnet_1" {
+  source            = "./vpc/modules/subnets/private"
+  availability_zone = local.availability_zone
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 4, 1)
+  ipv6_cidr_block   = cidrsubnet(aws_vpc.main.ipv6_cidr_block, 8, 1)
+  nat_gateway_id    = module.public_subnet_1.nat_gateway_id
+  vpc               = local.vpc
+  tags              = local.tags
+}
+
+module "public_subnet_1" {
+  source            = "./vpc/modules/subnets/public"
+  availability_zone = local.availability_zone
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 4, 2)
+  ipv6_cidr_block   = cidrsubnet(aws_vpc.main.ipv6_cidr_block, 8, 2)
+  internet_gateway  = module.gateways.internet_gateway
+  vpc               = local.vpc
+  tags              = local.tags
+}
+
+module "security_group_1" {
+  source = "./security_group/modules"
+  vpc    = local.vpc
 }
 
 module "cluster" {
   source                       = "./ecs/modules/cluster"
-  ecs_cluster_name             = "customers"
-  autoscaling_min_size         = 3
-  autoscaling_max_size         = 3
-  autoscaling_desired_size     = 3
-  app_name                     = ""
-  ami_image_id                 = ""
-  ec2_instance_type            = ""
-  ec2_instance_key_name        = ""
-  autoscaling_group_name       = ""
-  autoscale_security_group_ids = ""
-  autoscale_vpc_subnet_ids     = [subnet_1a.subnet_id,subnet_1b.subnet_id,subnet_1c.subnet_id]
-  tags = {} # remove this, use defaults only
+  ecs_cluster_name             = local.system_id
+  autoscaling_min_size         = 2
+  autoscaling_max_size         = 2
+  autoscaling_desired_size     = 2
+  vpc                          = local.vpc
+  ec2_launch_template_name     = "customer-cluster"
+  ec2_instance_type            = "t3.small"
+  ec2_instance_key_name        = "dev-20240929" # TODO: inject via Make
+  autoscale_security_group_ids = [module.security_group_1.security_group.id]
+  subnet                       = module.private_subnet_1.subnet_id # run app in private subnet only
 }
+
+module "task_1" { # api
+  source             = "./ecs/modules/task_definition"
+  name               = "server"
+  queue_arn          = module.sqs.arn
+  availability_zones = [local.availability_zone]
+  container_name     = "server"
+  container_image    = local.server_ecr_image
+  log_group_name     = module.cluster.log_group_name
+  host_port          = 4000
+  container_port     = 4000
+  environment_variables = [
+    {
+      name  = "SECRET_ARN"
+      value = "foo" # set when ready for api to query db
+      # value = data.aws_secretsmanager_secret_version.rds_password.arn
+    },
+    {
+      name  = "HOST_DNS"
+      value = "bar" # set when ready for api to query db
+    },
+    {
+      name  = "DATABASE_NAME"
+      value = "baz" # set when ready for api to query db
+    },
+    {
+      name  = "PORT"
+      value = tostring(4000)
+    }
+  ]
+  tags = local.tags
+}
+
+module "service_1" { # api
+  source                 = "./ecs/modules/service"
+  desired_count          = 2
+  ecs_cluster_name       = module.cluster.ecs_cluster_name
+  service_discovery_name = module.cluster.service_discovery_dns_name
+  service_discovery_arn  = module.cluster.aws_service_discovery_service_arn
+  port_name              = module.task_1.port_name
+  vpc_id                 = local.vpc.id
+  endpoint               = false
+  subnet_ids = [
+    module.private_subnet_1.subnet_id,
+  ]
+  ecs_service_name        = "api"
+  ecs_task_definition_arn = module.task_1.task_definition.arn
+  ecs_task_count          = 1
+}
+
+module "task_2" { # worker
+  source             = "./ecs/modules/task_definition"
+  name               = "worker"
+  availability_zones = [local.availability_zone]
+  container_name     = "worker"
+  container_image    = local.worker_ecr_image
+  log_group_name     = module.cluster.log_group_name
+  host_port          = 5000
+  container_port     = 5000
+  environment_variables = [
+    {
+      name  = "QUEUE_NAME"
+      value = module.sqs.name
+    },
+    {
+      name  = "ACCOUNT_ID"
+      value = data.aws_caller_identity.current.account_id
+    },
+    {
+      name  = "AWS_REGION"
+      value = "us-west-2"
+    },
+    {
+      name  = "DUMMY"
+      value = "2"
+    }
+  ]
+  tags = local.tags
+}
+
+module "service_2" {
+  source                 = "./ecs/modules/service"
+  desired_count          = 2
+  ecs_cluster_name       = module.cluster.ecs_cluster_name
+  port_name              = module.task_2.port_name
+  service_discovery_name = module.cluster.service_discovery_dns_name
+  service_discovery_arn  = module.cluster.aws_service_discovery_service_arn
+  vpc_id                 = local.vpc.id
+  endpoint               = true
+  subnet_ids = [
+    module.private_subnet_1.subnet_id,
+  ]
+  ecs_service_name        = "worker"
+  ecs_task_definition_arn = module.task_2.task_definition.arn
+  ecs_task_count          = 1
+}
+
+# module "rds" {
+#   source            = "./rds/modules/v1"
+#   allocated_storage = 2
+#   db_name           = "mydb"
+#   engine            = "mysql"
+#   engine_version    = "8.0"
+#   instance_class    = "db.t3.micro"
+#   username          = "foo"
+#   password             = jsondecode(aws_secretsmanager_secret_version.rds_password.secret_string)["password"]
+#   # password             = jsondecode(data.aws_secretsmanager_secret_version.rds_password.secret_string)["password"]
+#   parameter_group_name = "default.mysql8.0"
+#   skip_final_snapshot  = true
+# }
+
+
+# resource "aws_vpc" "main" {
+#   cidr_block           = "10.0.0.0/16"
+#   enable_dns_support   = true
+#   enable_dns_hostnames = true
+#   tags = {
+#     Env      = "dev"
+#     SystemId = "ecs-poc"
+#   }
+# }
+
+# TODO: stop using versioning here
+# resource "aws_secretsmanager_secret" "rds_v11" {
+#   name = "rds_v11"
+#   tags = local.tags
+# }
+
+# resource "aws_secretsmanager_secret_version" "rds_password" {
+#   secret_id     = aws_secretsmanager_secret.rds_v11.id
+#   secret_string = jsonencode({
+#     "username": "<redacted>"
+#     "password": "<redacted>"
+#     })
+# }
+
+# data "aws_secretsmanager_secret_version" "rds_password" {
+#   secret_id = aws_secretsmanager_secret.rds_v11.id
+# }

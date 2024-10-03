@@ -1,0 +1,6 @@
+ping-instance.py
+outline.md
+*.sh
+terraform.*
+Makefile
+.terraform*

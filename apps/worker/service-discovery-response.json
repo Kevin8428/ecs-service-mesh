@@ -1,0 +1,53 @@
+{
+    "Instances": [
+        {
+            "InstanceId": "95b10ffd74304c389e4256b0b01c6de3",
+            "NamespaceName": "development_dns",
+            "ServiceName": "development_discovery_service",
+            "HealthStatus": "HEALTHY",
+            "Attributes": {
+                "AVAILABILITY_ZONE": "us-west-2a",
+                "AWS_INIT_HEALTH_STATUS": "HEALTHY",
+                "AWS_INSTANCE_IPV4": "10.0.24.195",
+                "AWS_INSTANCE_IPV6": "2600:1f13:f62:cc01:55ab:c74a:c366:4114",
+                "EC2_INSTANCE_ID": "i-00e1bd51523fe1de9",
+                "ECS_CLUSTER_NAME": "ecs-poc",
+                "ECS_SERVICE_NAME": "api",
+                "ECS_TASK_DEFINITION_FAMILY": "server",
+                "REGION": "us-west-2"
+            }
+        },
+        {
+            "InstanceId": "f266c8bd33ee45d0b8bd5f3267719382",
+            "NamespaceName": "development_dns",
+            "ServiceName": "development_discovery_service",
+            "HealthStatus": "HEALTHY",
+            "Attributes": {
+                "AVAILABILITY_ZONE": "us-west-2a",
+                "AWS_INIT_HEALTH_STATUS": "HEALTHY",
+                "AWS_INSTANCE_IPV4": "10.0.17.5",
+                "AWS_INSTANCE_IPV6": "2600:1f13:f62:cc01:aab6:8687:7263:a2f2",
+                "EC2_INSTANCE_ID": "i-00e1bd51523fe1de9",
+                "ECS_CLUSTER_NAME": "ecs-poc",
+                "ECS_SERVICE_NAME": "api",
+                "ECS_TASK_DEFINITION_FAMILY": "server",
+                "REGION": "us-west-2"
+            }
+        }
+    ],
+    "InstancesRevision": 87292307106564577,
+    "ResponseMetadata": {
+        "RequestId": "325e93bb-f3e6-4bed-a5aa-1d7e40c27c00",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "date": "Thu, 03 Oct 2024 03:21:45 GMT",
+            "content-type": "application/x-amz-json-1.1",
+            "content-length": "1023",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "325e93bb-f3e6-4bed-a5aa-1d7e40c27c00",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff"
+        },
+        "RetryAttempts": 0
+    }
+}

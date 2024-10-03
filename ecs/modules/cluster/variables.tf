@@ -1,8 +1,3 @@
-terraform {
-  # bump tf version
-  required_version = ">= 0.8"
-}
-
 # REQUIRED
 
 variable "ecs_cluster_name" {
@@ -10,14 +5,14 @@ variable "ecs_cluster_name" {
   description = "cluster name"
 }
 
-variable "app_name" {
-  type        = string
-  description = "app name"
+variable "vpc" {
+  type        = map
+  description = "vpc object"
 }
 
-variable "ami_image_id" {
+variable "ec2_launch_template_name" {
   type        = string
-  description = "ec2 image indentifier"
+  description = "instance type"
 }
 
 variable "ec2_instance_type" {
@@ -30,19 +25,14 @@ variable "ec2_instance_key_name" {
   description = "Key for ec2 instances"
 }
 
-variable "autoscaling_group_name" {
-  type        = string
-  description = "autoscaling name"
-}
-
 variable "autoscale_security_group_ids" {
   type        = list(string)
   description = "Security groups attached to ec2 instances"
 }
 
-variable "autoscale_vpc_subnet_ids" {
-  type        = list(string)
-  description = "VPC subnets"
+variable "subnet" {
+  type        = string
+  description = "VPC subnet id for ASG"
 }
 
 # OPTIONAL
@@ -53,11 +43,11 @@ variable "availability_zones" {
   default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
 
-variable "associate_public_ip_address" {
-  type        = bool
-  description = "Attach a public ip to the instance from within the VPC"
-  default     = "false"
-}
+# variable "associate_public_ip_address" {
+#   type        = bool
+#   description = "Attach a public ip to the instance from within the VPC"
+#   default     = "false"
+# }
 
 variable "autoscaling_min_size" {
   type        = number

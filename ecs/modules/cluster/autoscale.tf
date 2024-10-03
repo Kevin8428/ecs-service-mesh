@@ -1,3 +1,19 @@
+data "aws_ami" "amazon-linux-2-ecs-optimized" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "owner-alias"
+    values = ["amazon"]
+  }
+
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-ecs*"]
+  }
+}
+
 data "template_file" "init_script" {
   template = file("${path.module}/init_script.sh")
 
@@ -8,8 +24,8 @@ data "template_file" "init_script" {
 }
 
 resource "aws_launch_template" "instance_manager" {
-  name                   = "foo"
-  image_id               = var.ami_image_id
+  name                   = var.ecs_cluster_name
+  image_id               = data.aws_ami.amazon-linux-2-ecs-optimized.id
   instance_type          = var.ec2_instance_type
   update_default_version = true
   key_name               = var.ec2_instance_key_name
@@ -25,31 +41,27 @@ resource "aws_launch_template" "instance_manager" {
     name = aws_iam_instance_profile.ecs.name
   }
 
-  network_interfaces {
-    device_index                = 0
-    subnet_id                   = data.aws_subnet.subnet.id
-    associate_public_ip_address = true
-    security_groups             = var.autoscale_security_group_ids
-  }
-
   tag_specifications {
     resource_type = "instance"
     tags          = local.tags
   }
 
-  user_data = filebase64("${path.module}/example.sh")
+  network_interfaces {
+    device_index                = 0
+    associate_public_ip_address = false # networking mode `awsvpc` won't let you attach public ip, need private subnet w/ nat gateway
+    subnet_id                   = var.subnet
+  }
 
+  user_data = base64encode(data.template_file.init_script.rendered)
 }
 
-
 resource "aws_autoscaling_group" "group" {
-  availability_zones  = var.availability_zones
-  name                = var.autoscaling_group_name
+  name                = var.ecs_cluster_name
   min_size            = var.autoscaling_min_size
   max_size            = var.autoscaling_max_size
   desired_capacity    = var.autoscaling_desired_size
   health_check_type   = "EC2"
-  vpc_zone_identifier = var.autoscale_vpc_subnet_ids
+  vpc_zone_identifier = [var.subnet]
 
   launch_template {
     id      = aws_launch_template.instance_manager.id
