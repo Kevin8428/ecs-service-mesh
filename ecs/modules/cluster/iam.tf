@@ -3,11 +3,6 @@ resource "aws_iam_role_policy_attachment" "ecs_container_registry" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
-# resource "aws_iam_role_policy_attachment" "ecs_attach_policy_2" {
-#   role       = aws_iam_role.ecs_host_role.id
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
-# }
-
 # TODO: remove full access
 resource "aws_iam_role_policy_attachment" "ecs_attach_policy_3" {
   role       = aws_iam_role.ecs_host_role.id

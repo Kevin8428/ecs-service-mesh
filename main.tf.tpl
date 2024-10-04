@@ -4,10 +4,10 @@ data "aws_caller_identity" "current" {}
 locals {
   system_id         = "ecs-poc"
   region            = "us-west-2"
-  api_tag           = "0.2.7"
+  api_tag           = "0.2.6"
   worker_tag        = "0.1.26"
   availability_zone = "us-west-2a"
-  ecs_key           = "dev-20240929"
+  ecs_key           = __EC2_KEY_NAME__
   api_ecr_image    = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/${local.system_id}-api:${local.api_tag}"
   worker_ecr_image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/${local.system_id}-worker:${local.worker_tag}"
   # TODO: add tags everywhere

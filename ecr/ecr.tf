@@ -1,4 +1,4 @@
-resource "aws_ecr_repository" "foo" {
+resource "aws_ecr_repository" "r" {
   name                 = var.name
   image_tag_mutability = "IMMUTABLE"
   tags = var.tags

@@ -57,7 +57,7 @@ def process_message(message_body):
     logger.info("instances found: %s", instances)
     ip = instances['Instances'][0]['Attributes']['AWS_INSTANCE_IPV4']
     # from https://docs.aws.amazon.com/cloud-map/latest/api/API_DiscoverInstances.html
-    # - return is randomized to evenly distribute traffic. Seems imperfect since
+    # - `return is randomized to evenly distribute traffic`. Seems imperfect since
     # we'd like to distribute traffic based on something like round robin or CPU utilization.
     port = os.environ["SERVER_PORT"]
     url = "http://{}:{}/message".format(ip, port)
@@ -70,7 +70,7 @@ def main():
     """
     Persistent query of queue with long polling. Process messages and remove from queue
     """
-    logger.info("Starting SQS consumer 0.1.19")
+    logger.info("Starting SQS consumer")
     try:
         validate()
     except AssertionError as e:
@@ -85,7 +85,7 @@ def main():
         )['QueueUrl']
         logger.info("Consuming from queue %s", url)
     except Exception as e:
-        logger.error("failed to get queue %s", e)
+        logger.error("Failed to get queue %s", e)
         raise
 
     while True:

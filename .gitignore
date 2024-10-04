@@ -1,6 +1,7 @@
 ping-instance.py
 outline.md
-*.sh
+push-server.sh
+push-worker.sh
 terraform.*
 Makefile
 .terraform*
