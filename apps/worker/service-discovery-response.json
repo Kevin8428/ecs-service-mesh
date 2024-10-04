@@ -1,16 +1,16 @@
 {
     "Instances": [
         {
-            "InstanceId": "95b10ffd74304c389e4256b0b01c6de3",
+            "InstanceId": "b2fc06e7e2974489b99073f93b53af32",
             "NamespaceName": "development_dns",
             "ServiceName": "development_discovery_service",
             "HealthStatus": "HEALTHY",
             "Attributes": {
                 "AVAILABILITY_ZONE": "us-west-2a",
                 "AWS_INIT_HEALTH_STATUS": "HEALTHY",
-                "AWS_INSTANCE_IPV4": "10.0.24.195",
-                "AWS_INSTANCE_IPV6": "2600:1f13:f62:cc01:55ab:c74a:c366:4114",
-                "EC2_INSTANCE_ID": "i-00e1bd51523fe1de9",
+                "AWS_INSTANCE_IPV4": "10.0.29.4",
+                "AWS_INSTANCE_IPV6": "2600:1f14:2c9a:c501:79a1:37f1:f7da:c83e",
+                "EC2_INSTANCE_ID": "i-091c797df37677fa0",
                 "ECS_CLUSTER_NAME": "ecs-poc",
                 "ECS_SERVICE_NAME": "api",
                 "ECS_TASK_DEFINITION_FAMILY": "server",
@@ -18,16 +18,16 @@
             }
         },
         {
-            "InstanceId": "f266c8bd33ee45d0b8bd5f3267719382",
+            "InstanceId": "678d3e31c8c847d68bf6dcfc67108a4f",
             "NamespaceName": "development_dns",
             "ServiceName": "development_discovery_service",
             "HealthStatus": "HEALTHY",
             "Attributes": {
                 "AVAILABILITY_ZONE": "us-west-2a",
                 "AWS_INIT_HEALTH_STATUS": "HEALTHY",
-                "AWS_INSTANCE_IPV4": "10.0.17.5",
-                "AWS_INSTANCE_IPV6": "2600:1f13:f62:cc01:aab6:8687:7263:a2f2",
-                "EC2_INSTANCE_ID": "i-00e1bd51523fe1de9",
+                "AWS_INSTANCE_IPV4": "10.0.16.104",
+                "AWS_INSTANCE_IPV6": "2600:1f14:2c9a:c501:a9a1:bd8e:1637:b5fe",
+                "EC2_INSTANCE_ID": "i-03a9a2f509a3802f1",
                 "ECS_CLUSTER_NAME": "ecs-poc",
                 "ECS_SERVICE_NAME": "api",
                 "ECS_TASK_DEFINITION_FAMILY": "server",
@@ -35,16 +35,16 @@
             }
         }
     ],
-    "InstancesRevision": 87292307106564577,
+    "InstancesRevision": 87314358259373140,
     "ResponseMetadata": {
-        "RequestId": "325e93bb-f3e6-4bed-a5aa-1d7e40c27c00",
+        "RequestId": "af17fc59-573a-42ea-a57a-a792823e6dc5",
         "HTTPStatusCode": 200,
         "HTTPHeaders": {
-            "date": "Thu, 03 Oct 2024 03:21:45 GMT",
+            "date": "Fri, 04 Oct 2024 01:08:19 GMT",
             "content-type": "application/x-amz-json-1.1",
-            "content-length": "1023",
+            "content-length": "1025",
             "connection": "keep-alive",
-            "x-amzn-requestid": "325e93bb-f3e6-4bed-a5aa-1d7e40c27c00",
+            "x-amzn-requestid": "af17fc59-573a-42ea-a57a-a792823e6dc5",
             "strict-transport-security": "max-age=31536000; includeSubDomains",
             "x-content-type-options": "nosniff"
         },

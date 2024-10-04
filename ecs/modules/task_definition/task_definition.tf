@@ -17,8 +17,8 @@ resource "aws_ecs_task_definition" "task" {
       cpu         = var.cpu
       memory      = var.memory
       essential   = true
-      entryPoint  = ["python"]
-      command     = ["app.py"]
+      entryPoint  = var.entrypoint
+      command     = var.command
       environment = var.environment_variables
       logConfiguration = {
         logDriver = "awslogs"

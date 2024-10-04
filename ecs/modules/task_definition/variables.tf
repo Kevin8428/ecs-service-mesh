@@ -51,6 +51,18 @@ variable "name" {
   description = "task definition name"
 }
 
+variable "entrypoint" {
+  type        = list
+  description = "task entrypoint"
+  default = ["python"]
+}
+
+variable "command" {
+  type        = list
+  description = "task command"
+  default = ["app.py"]
+}
+
 variable "environment_variables" {
   type    = list(any)
   default = []

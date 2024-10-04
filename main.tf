@@ -4,8 +4,8 @@ data "aws_caller_identity" "current" {}
 locals {
   system_id         = "ecs-poc"
   region            = "us-west-2"
-  server_tag        = "0.2.2"
-  worker_tag        = "0.1.22"
+  server_tag        = "0.2.6"
+  worker_tag        = "0.1.26"
   availability_zone = "us-west-2a"
   # TODO: change `poc` to `api`
   server_ecr_image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/poc:${local.server_tag}"
@@ -83,9 +83,9 @@ module "security_group_1" {
 module "cluster" {
   source                       = "./ecs/modules/cluster"
   ecs_cluster_name             = local.system_id
-  autoscaling_min_size         = 2
-  autoscaling_max_size         = 2
-  autoscaling_desired_size     = 2
+  autoscaling_min_size         = 3
+  autoscaling_max_size         = 3
+  autoscaling_desired_size     = 3
   vpc                          = local.vpc
   ec2_launch_template_name     = "customer-cluster"
   ec2_instance_type            = "t3.small"
@@ -156,6 +156,10 @@ module "task_2" { # worker
     {
       name  = "QUEUE_NAME"
       value = module.sqs.name
+    },
+    {
+      name  = "SERVER_PORT"
+      value = module.task_1.host_port
     },
     {
       name  = "ACCOUNT_ID"

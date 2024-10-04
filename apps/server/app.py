@@ -32,17 +32,17 @@ def status():
     return Response("{'status':'healthy'}", status=200, mimetype='application/json')
 
 
-@app.route("/message", methods=['POST'])
+@app.route("/message", methods=['GET'])
 def save_message():
     """
     Router to store message in DB
     """
-    data = request.form
-    message = data['message']
-    print('received message: ', message)
-    username, password = get_db_configs()
-    print('username: ', username)
-    print('password: ', password)
+    print('hit /message handler')
+    message = request.args.get('language')
+    print('message found: ', message)
+    # username, password = get_db_configs()
+    # print('username: ', username)
+    # print('password: ', password)
 
     # connection = pymysql.connect(
     #     host=os.environ.get('HOST_DNS'),
@@ -52,7 +52,9 @@ def save_message():
     #     database=os.environ.get('DATABASE_NAME')
     # )
     # logging.info('connection: %s', connection)
+    return {'status': 'success'}, 200
 
 if __name__ == "__main__":
+    print('running 1.1')
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)

@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 SQS_CLIENT = boto3.client('sqs',
                           region_name='us-west-2',
-                          config=Config(connect_timeout=50, retries={'max_attempts': 0}))
+                          config=Config(connect_timeout=20, retries={'max_attempts': 0}))
 SD_CLIENT = boto3.client('servicediscovery',
                          region_name='us-west-2',
-                         config=Config(connect_timeout=50, retries={'max_attempts': 0}))
+                         config=Config(connect_timeout=20, retries={'max_attempts': 0}))
 
 
 def validate():
@@ -29,7 +29,8 @@ def validate():
     required_envvars = [
         "AWS_REGION",
         "QUEUE_NAME",
-        "ACCOUNT_ID"
+        "ACCOUNT_ID",
+        "SERVER_PORT",
     ]
 
     missing_envvars = []
@@ -51,17 +52,18 @@ def process_message(message_body):
     logger.info("Processing message: %s", message_body)
     instances = SD_CLIENT.discover_instances(NamespaceName='development_dns',
                                              ServiceName='development_discovery_service',
+                                             HealthStatus='HEALTHY',
                                              QueryParameters={ 'ECS_SERVICE_NAME': 'api' })
     logger.info("instances found: %s", instances)
     ip = instances['Instances'][0]['Attributes']['AWS_INSTANCE_IPV4']
-    # port not found - can you use ipv6
-    port = instances['Instances'][0]['Attributes']['AWS_INSTANCE_PORT']
-    url = "https://{}:{}/message".format(ip, port)
+    # from https://docs.aws.amazon.com/cloud-map/latest/api/API_DiscoverInstances.html
+    # - return is randomized to evenly distribute traffic. Seems imperfect since
+    # we'd like to distribute traffic based on something like round robin or CPU utilization.
+    port = os.environ["SERVER_PORT"]
+    url = "http://{}:{}/message".format(ip, port)
     logger.info("publishing to url: %s", url)
-    r = requests.post(url=url,
-                      data={'message': message_body},
-                      timeout=10)
-    logger.info("published message response: %s", r.text)
+    response = requests.get(url, params={'message': message_body}, timeout=10)
+    logger.info("published message response: %s", response)
 
 
 def main():
@@ -100,7 +102,12 @@ def main():
                 logger.error("Error processing message: %s ", e)
                 continue
 
-            message.delete()
+            # trying to delete the message
+            dlt_response = SQS_CLIENT.delete_message(
+                QueueUrl=queue,
+                ReceiptHandle=message['ReceiptHandle']
+                )
+            logger.info("delete response %s", dlt_response)
 
 
 if __name__ == "__main__":

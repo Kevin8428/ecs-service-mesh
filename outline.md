@@ -1,3 +1,9 @@
+- https://github.com/ranman/ecs-service-discovery-demo
+    - example of 2 apps talking with service discovery
+
+https://aws.amazon.com/blogs/containers/migrate-existing-amazon-ecs-services-from-service-discovery-to-amazon-ecs-service-connect/
+- this doesn't show service discovery from app to app
+
 1. extend poc to use private subnet and nat gateway
 2. update main project to
     - only have one private subnet

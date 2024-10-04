@@ -5,3 +5,7 @@ output task_definition {
 output port_name {
     value = local.port_mapping_name
 }
+
+output host_port {
+    value = var.host_port
+}
