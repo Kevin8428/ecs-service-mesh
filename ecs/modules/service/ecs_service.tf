@@ -4,6 +4,26 @@ resource "aws_cloudwatch_log_group" "service" {
   tags = var.tags
 }
 
+resource "aws_service_discovery_service" "dev_dns" {
+  name = var.ecs_service_name
+
+  dns_config {
+    namespace_id = var.service_discovery_dns_id
+
+    dns_records {
+      ttl  = 10 # dns recursive resolver cache
+      type = "A"
+    }
+    # MULTIVALUE will return all IPs of ec2 instances for client side load balancing
+    # WEIGHTED will return 1 IP from all IPs given the weighted load balancing specifed
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
 resource "aws_ecs_service" "service_definition" {
   name                 = var.ecs_service_name
   cluster              = var.ecs_cluster_name
@@ -23,43 +43,43 @@ resource "aws_ecs_service" "service_definition" {
   }
 
   service_registries {
-    registry_arn = var.service_discovery_arn
+    registry_arn = aws_service_discovery_service.dev_dns.arn
   }
 
-  service_connect_configuration {
-    enabled = true
-    # all services in this namespace can talk to this service
-    # and this service can talk to all them
-    namespace = var.service_discovery_name
+  # service_connect_configuration {
+  #   enabled = true
+  #   # all services in this namespace can talk to this service
+  #   # and this service can talk to all them
+  #   namespace = var.service_discovery_name
 
-    service {
-      # discovery name is registered in cloud map
-      discovery_name = var.ecs_service_name
-      # reference to container port
-      port_name = var.port_name
-      # timeout {
-      #   per_request_timeout_seconds = 100
-      # }
-      # friendlier DNS name to call out service
+  #   service {
+  #     # discovery name is registered in cloud map
+  #     discovery_name = var.ecs_service_name
+  #     # reference to container port
+  #     port_name = var.port_name
+  #     # timeout {
+  #     #   per_request_timeout_seconds = 100
+  #     # }
+  #     # friendlier DNS name to call out service
 
-      # this assigns the port number and DNS name
-      client_alias {
-        # can reach this service via dns_name:port
-        dns_name = "${var.ecs_service_name}.${var.service_discovery_name}"
-        # dns_name = var.ecs_service_name
-        port     = 8000
-      }
+  #     # this assigns the port number and DNS name
+  #     client_alias {
+  #       # can reach this service via dns_name:port
+  #       dns_name = "${var.ecs_service_name}.${var.service_discovery_name}"
+  #       # dns_name = var.ecs_service_name
+  #       port     = 8000
+  #     }
     
-    }
+  #   }
 
-    log_configuration {
-      log_driver = "awslogs"
-      options = {
-        awslogs-group  = aws_cloudwatch_log_group.service.name
-        awslogs-region = "us-west-2"
-      }
-    }
-  }
+  #   log_configuration {
+  #     log_driver = "awslogs"
+  #     options = {
+  #       awslogs-group  = aws_cloudwatch_log_group.service.name
+  #       awslogs-region = "us-west-2"
+  #     }
+  #   }
+  # }
 }
 
 resource "aws_security_group" "sg" {

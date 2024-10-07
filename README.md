@@ -22,7 +22,7 @@ Design summary:
 - 1 route table associate public subnet to internet gateway, as to connect VPC to internet
 - 1 private subnet where apps run
 - 1 route table associate private subnet to NAT gateway on public subnet
-- 2 ECS clusters running on private subnet
+- 2 ECS services running on private subnet
 - EC2 intances running as container instances
 - Autoscaling for EC2 instances
 - Secrets managed in Secret Manager

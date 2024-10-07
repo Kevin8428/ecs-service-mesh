@@ -37,9 +37,8 @@ def save_message():
     """
     Router to store message in DB
     """
-    print('hit /message handler')
-    message = request.args.get('language')
-    print('message found: ', message)
+    message = request.args.get('message')
+    print('message: ', message)
     # username, password = get_db_configs()
 
     # connection = pymysql.connect(

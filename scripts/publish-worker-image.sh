@@ -19,6 +19,6 @@ then
     exit 1
 fi
 
-docker build -t $REPOSITORY:$VERSION -f apps/server/Dockerfile ./apps/server
+docker build -t $REPOSITORY:$VERSION -f apps/worker/Dockerfile ./apps/worker
 docker tag $(docker images -q $REPOSITORY:$VERSION) $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$VERSION
 docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$VERSION

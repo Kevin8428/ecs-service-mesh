@@ -5,11 +5,11 @@ locals {
   system_id         = "ecs-poc"
   region            = "us-west-2"
   api_tag           = "0.2.7"
-  worker_tag        = "0.1.26"
+  worker_tag        = "0.2.0"
   availability_zone = "us-west-2a"
   ecs_key           = "dev-20240929"
-  api_ecr_image    = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/${local.system_id}-api:${local.api_tag}"
-  worker_ecr_image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/${local.system_id}-worker:${local.worker_tag}"
+  api_ecr_image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/${local.system_id}-api:${local.api_tag}"
+  worker_ecr_image  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${local.region}.amazonaws.com/${local.system_id}-worker:${local.worker_tag}"
   # TODO: add tags everywhere
   tags = {
     Env      = "dev"
@@ -133,14 +133,15 @@ module "task_1" { # api
 }
 
 module "service_1" { # api
-  source                 = "./ecs/modules/service"
-  desired_count          = 2
-  ecs_cluster_name       = module.cluster.ecs_cluster_name
-  service_discovery_name = module.cluster.service_discovery_dns_name
-  service_discovery_arn  = module.cluster.aws_service_discovery_service_arn
-  port_name              = module.task_1.port_name
-  vpc_id                 = local.vpc.id
-  endpoint               = false
+  source           = "./ecs/modules/service"
+  desired_count    = 2
+  ecs_cluster_name = module.cluster.ecs_cluster_name
+  # service_discovery_name = module.cluster.service_discovery_dns_name
+  service_discovery_dns_id = module.cluster.service_discovery_dns_id
+  # service_discovery_arn    = module.cluster.aws_service_discovery_service_arn
+  port_name                = module.task_1.port_name
+  vpc_id                   = local.vpc.id
+  endpoint                 = false
   subnet_ids = [
     module.private_subnet_1.subnet_id,
   ]
@@ -164,8 +165,12 @@ module "task_2" { # worker
       value = module.sqs.name
     },
     {
-      name  = "API_PORT"
+      name  = "SERVER_PORT"
       value = module.task_1.host_port
+    },
+    {
+      name  = "SERVER_URL"
+      value = "api.${local.system_id}"
     },
     {
       name  = "ACCOUNT_ID"
@@ -180,14 +185,15 @@ module "task_2" { # worker
 }
 
 module "service_2" {
-  source                 = "./ecs/modules/service"
-  desired_count          = 2
-  ecs_cluster_name       = module.cluster.ecs_cluster_name
-  port_name              = module.task_2.port_name
-  service_discovery_name = module.cluster.service_discovery_dns_name
-  service_discovery_arn  = module.cluster.aws_service_discovery_service_arn
-  vpc_id                 = local.vpc.id
-  endpoint               = true
+  source           = "./ecs/modules/service"
+  desired_count    = 2
+  ecs_cluster_name = module.cluster.ecs_cluster_name
+  port_name        = module.task_2.port_name
+  # service_discovery_name = module.cluster.service_discovery_dns_name
+  service_discovery_dns_id = module.cluster.service_discovery_dns_id
+  # service_discovery_arn = module.cluster.aws_service_discovery_service_arn
+  vpc_id                = local.vpc.id
+  endpoint              = true
   subnet_ids = [
     module.private_subnet_1.subnet_id,
   ]

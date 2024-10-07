@@ -33,12 +33,17 @@ variable "ecs_task_count" {
   description = ""
 }
 
-variable "service_discovery_name" {
-  type        = string
-  description = "needed to register service in cloud map"
-}
+# variable "service_discovery_name" {
+#   type        = string
+#   description = "needed to register service in cloud map"
+# }
 
-variable "service_discovery_arn" {
+# variable "service_discovery_arn" {
+#   type        = string
+#   description = "needed to register service in cloud map"
+# }
+
+variable "service_discovery_dns_id" {
   type        = string
   description = "needed to register service in cloud map"
 }

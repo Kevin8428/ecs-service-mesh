@@ -22,6 +22,10 @@ output "service_discovery_dns_name" {
   value = aws_service_discovery_private_dns_namespace.dev_dns.name
 }
 
-output "aws_service_discovery_service_arn" {
-  value = aws_service_discovery_service.dev_dns.arn
+output "service_discovery_dns_id" {
+  value = aws_service_discovery_private_dns_namespace.dev_dns.id
 }
+
+# output "aws_service_discovery_service_arn" {
+#   value = aws_service_discovery_service.dev_dns.arn
+# }

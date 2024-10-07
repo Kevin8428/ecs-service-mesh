@@ -5,3 +5,4 @@ push-worker.sh
 terraform.*
 Makefile
 .terraform*
+notes.md

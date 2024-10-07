@@ -30,6 +30,7 @@ def validate():
         "AWS_REGION",
         "QUEUE_NAME",
         "ACCOUNT_ID",
+        "SERVER_URL",
         "SERVER_PORT",
     ]
 
@@ -44,8 +45,7 @@ def validate():
         raise AssertionError(message)
 
 
-
-def process_message(message_body):
+def process_message_via_service_discovery(message_body):
     """
     Get api service instance and publish message via HTTP
     """
@@ -65,6 +65,14 @@ def process_message(message_body):
     response = requests.get(url, params={'message': message_body}, timeout=10)
     logger.info("published message response: %s", response)
 
+
+def process_message_via_dns(message_body):
+    dns = os.environ["SERVER_URL"]
+    port = os.environ["SERVER_PORT"]
+    url = "http://{}:{}/message".format(dns, port)
+    logger.info("publishing to url: %s", url)
+    response = requests.get(url, params={'message': message_body}, timeout=10)
+    logger.info("published message response: %s", response)
 
 def main():
     """
@@ -97,7 +105,8 @@ def main():
         )
         for message in response.get("Messages", []):
             try:
-                process_message(message['Body'])
+                # process_message_via_service_discovery(message['Body'])
+                process_message_via_dns(message['Body'])
             except Exception as e:
                 logger.error("Error processing message: %s ", e)
                 continue
